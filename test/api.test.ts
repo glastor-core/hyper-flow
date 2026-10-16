@@ -66,4 +66,12 @@ describe("Hyper-Flow Edge API Endpoints", () => {
     expect(spec.paths["/health"]).toBeDefined();
     expect(spec.paths["/api/v1/ai/generate"]).toBeDefined();
   });
+
+  it("GET / returns 200 and renders the interactive dashboard HTML", async () => {
+    const res = await app.request("/");
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("Hyper-Flow");
+    expect(html).toContain("Edge AI & Pipeline Control Center");
+  });
 });

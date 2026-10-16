@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
 import { db, rawClient } from "./db/client.ts";
 import { aiInferenceLogs } from "./db/schema.ts";
+import { renderDashboardHtml } from "./views/dashboard.ts";
 
 const startTime = Date.now();
 
@@ -213,8 +214,8 @@ app.get(
   })
 );
 
-// Redirect root to documentation
-app.get("/", (c) => c.redirect("/doc"));
+// Serve interactive Web Dashboard on root
+app.get("/", (c) => c.html(renderDashboardHtml()));
 
 // ==========================================
 // 5. Server Bootstrap (Multi-Runtime Compatible)

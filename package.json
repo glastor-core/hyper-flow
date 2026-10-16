@@ -12,6 +12,7 @@
     "test:api": "bun test test/api.test.ts",
     "deno:dev": "deno run --watch --allow-net --allow-env src/server.ts",
     "db:migrate": "bun run src/db/migrate.ts",
+    "export:openapi": "bun -e \"import { app } from './src/server.ts'; const res = await app.request('/api/v1/openapi.json'); await Bun.write('openapi.json', await res.text()); console.log('✅ openapi.json generated');\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

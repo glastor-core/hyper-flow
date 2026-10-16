@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 concurrency:
@@ -12,9 +13,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ==========================================
+  # =========================================================================
+  # 0. Repository Management: PR Auto-Triage & Labeling (Zero Collision)
+  # =========================================================================
+  pr-triage:
+    name: 🏷️ PR Auto-Triage & Labeler
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: read
+    steps:
+      - name: Auto-label PR by changed areas
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const labelsToAdd = new Set();
+            for (const file of files) {
+              const filename = file.filename;
+              if (filename.startsWith('src/db/')) labelsToAdd.add('area:database');
+              else if (filename.startsWith('src/views/')) labelsToAdd.add('area:ui-dashboard');
+              else if (filename.startsWith('test/')) labelsToAdd.add('area:tests');
+              else if (filename.startsWith('.github/')) labelsToAdd.add('area:ci-cd');
+              else if (filename.startsWith('src/')) labelsToAdd.add('area:api-core');
+              else if (filename.endsWith('.json') || filename.endsWith('.md')) labelsToAdd.add('area:docs-config');
+            }
+
+            if (labelsToAdd.size > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: Array.from(labelsToAdd)
+              });
+              console.log(`Applied labels: ${Array.from(labelsToAdd).join(', ')}`);
+            }
+
+  # =========================================================================
   # 1. Tests & AI Evals (Ultra-fast Bun Runner)
-  # ==========================================
+  # =========================================================================
   test-and-eval:
     name: ⚡ Bun Fast Tests & AI Evals
     runs-on: ubuntu-latest
@@ -35,9 +79,9 @@ jobs:
         env:
           NODE_ENV: test
 
-  # ==========================================
+  # =========================================================================
   # 2. Database Sync (Edge Migrations)
-  # ==========================================
+  # =========================================================================
   database-sync:
     name: 🗄️ Edge Database Migration
     needs: test-and-eval
@@ -60,9 +104,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:local.db' }}
           DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
 
-  # ==========================================
+  # =========================================================================
   # 3. Deploy to Deno Deploy (Preview or Production)
-  # ==========================================
+  # =========================================================================
   deploy:
     name: 🚀 Deploy to Deno Deploy
     needs: database-sync
@@ -112,9 +156,9 @@ jobs:
               body: commentBody
             });
 
-  # ==========================================
+  # =========================================================================
   # 4. Post-Deploy Smoke Test & Latency Budget
-  # ==========================================
+  # =========================================================================
   smoke-test:
     name: 🩺 Latency & Health Verification
     needs: deploy
@@ -139,3 +183,91 @@ jobs:
           else
             echo "✅ Production Edge API verified healthy in ${LATENCY_MS}ms!"
           fi
+
+  # =========================================================================
+  # 5. Repository Management: Automated Release & Contract Artifacts
+  # =========================================================================
+  automated-release:
+    name: 📦 Automated Release & Contract Publish
+    needs: smoke-test
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create tags and releases
+    outputs:
+      new_tag: ${{ steps.versioning.outputs.new_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Export OpenAPI Specification Artifact
+        run: bun run export:openapi
+
+      - name: Determine Next Semantic Version & Tag
+        id: versioning
+        run: |
+          # Fetch all tags
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          
+          # Auto-increment patch version for master merges
+          VERSION_NUM=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
+          NEW_PATCH=$((PATCH + 1))
+          NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+          
+          echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
+          echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+          echo "Next Release Tag: ${NEW_TAG}"
+
+      - name: Create GitHub Release with OpenAPI Contract Asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.versioning.outputs.new_tag }}"
+          gh release create "$TAG" \
+            --title "Release $TAG — Hyper-Flow Edge API" \
+            --generate-notes \
+            --notes-start-tag "${{ steps.versioning.outputs.latest_tag }}" \
+            openapi.json#OpenAPI-3.1-Contract.json
+          
+          echo "✅ Release $TAG created with official OpenAPI contract attached!"
+
+  # =========================================================================
+  # 6. Repository Management: Multi-Repo Downstream Dispatch (Optional)
+  # =========================================================================
+  downstream-sync:
+    name: 🔄 Multi-Repo Client Dispatch
+    needs: automated-release
+    if: github.ref == 'refs/heads/main' && env.CLIENT_REPO != ''
+    runs-on: ubuntu-latest
+    env:
+      CLIENT_REPO: ${{ secrets.CLIENT_REPO }} # e.g. "my-org/frontend-dashboard"
+      CLIENT_TOKEN: ${{ secrets.CLIENT_DISPATCH_TOKEN }}
+    steps:
+      - name: Dispatch Event to Consumer Repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ env.CLIENT_TOKEN }}
+          script: |
+            const [owner, repo] = process.env.CLIENT_REPO.split('/');
+            await github.rest.repos.createDispatchEvent({
+              owner,
+              repo,
+              event_type: 'edge_api_contract_updated',
+              client_payload: {
+                api_version: "${{ needs.automated-release.outputs.new_tag }}",
+                openapi_url: `https://raw.githubusercontent.com/${context.repo.owner}/${context.repo.repo}/main/openapi.json`
+              }
+            });
+            console.log(`Dispatched contract update to ${process.env.CLIENT_REPO}`);

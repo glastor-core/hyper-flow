@@ -148,8 +148,18 @@ Para habilitar el despliegue automático hacia Deno Deploy:
 
 ---
 
-## 🛡️ Sinergia con Nemesis (DevSecOps)
+## 🛡️ Sinergia y Cero-Interferencia con Nemesis
 
-Si usas [Nemesis](https://github.com/glastor-dev/nemesis) en tu repositorio:
-* **Nemesis** se encarga de: SAST, escaneo de secretos, análisis de licencias, SBOM y auto-remediación de archivos basura.
-* **Hyper-Flow Pipeline** se encarga de: Tests ultra-rápidos, AI Evals, migraciones de datos, despliegues atómicos y smoke tests de latencia.
+Este pipeline fue diseñado específicamente para **complementar a [Nemesis](https://github.com/glastor-dev/nemesis) con cero colisiones ni carreras de commits**:
+
+| Función | Responsable | Mecanismo Anti-Conflicto |
+| :--- | :--- | :--- |
+| **Seguridad (SAST/SCA/Secretos)** | 🛡️ **Nemesis** | Nemesis audita el código con Semgrep, Trivy y Gitleaks. |
+| **Limpieza de Archivos Tóxicos** | 🛡️ **Nemesis** | Nemesis hace el commit de auto-remediación (`[skip ci]`). |
+| **Compatibilidad con `[skip ci]`** | ⚡ **Hyper-Flow** | Hyper-Flow ignora commits `[skip ci]`, evitando builds redundantes. |
+| **Clasificación y Auto-Triage** | 🏷️ **Hyper-Flow** | Etiqueta PRs (`area:database`, `area:ai-engine`) vía API sin tocar Git. |
+| **Pruebas y AI Evals** | ⚡ **Hyper-Flow** | 10 tests unitarios y validación de contratos de IA con Bun. |
+| **Despliegue Edge Global** | 🦕 **Hyper-Flow** | Deno Deploy (`deployctl`) con URL de preview y smoke test. |
+| **Releases & Tags Semánticos** | 📦 **Hyper-Flow** | Genera tags (`v1.0.1`), notas y adjunta el contrato `openapi.json`. |
+| **Sincronización Multi-Repo** | 🔄 **Hyper-Flow** | Notifica a repositorios frontend clientes mediante `repository_dispatch`. |
+

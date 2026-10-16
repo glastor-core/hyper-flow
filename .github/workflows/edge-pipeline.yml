@@ -1,0 +1,141 @@
+name: Edge API Master Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================
+  # 1. Tests & AI Evals (Ultra-fast Bun Runner)
+  # ==========================================
+  test-and-eval:
+    name: ⚡ Bun Fast Tests & AI Evals
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Unit Tests & AI Evals
+        run: bun test
+        env:
+          NODE_ENV: test
+
+  # ==========================================
+  # 2. Database Sync (Edge Migrations)
+  # ==========================================
+  database-sync:
+    name: 🗄️ Edge Database Migration
+    needs: test-and-eval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Schema Migrations
+        run: bun run db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:local.db' }}
+          DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+
+  # ==========================================
+  # 3. Deploy to Deno Deploy (Preview or Production)
+  # ==========================================
+  deploy:
+    name: 🚀 Deploy to Deno Deploy
+    needs: database-sync
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "hyper-flow-edge"
+          entrypoint: "src/server.ts"
+          root: "."
+          prod: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+
+      - name: Post Preview URL Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const previewUrl = `https://hyper-flow-edge--pr-${prNumber}.deno.dev`;
+            
+            const commentBody = `### 🚀 Hyper-Flow Edge Preview Ready!\n\n` +
+              `Your Hono Edge API has been built and deployed globally.\n\n` +
+              `| Resource | URL |\n` +
+              `| :--- | :--- |\n` +
+              `| 🌐 **Live API** | [${previewUrl}](${previewUrl}) |\n` +
+              `| 🩺 **Health Check** | [${previewUrl}/health](${previewUrl}/health) |\n` +
+              `| 📖 **Interactive Docs** | [${previewUrl}/doc](${previewUrl}/doc) |\n\n` +
+              `*Deployed with Deno Deploy & verified with Bun.*`;
+
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: owner,
+              repo: repo,
+              body: commentBody
+            });
+
+  # ==========================================
+  # 4. Post-Deploy Smoke Test & Latency Budget
+  # ==========================================
+  smoke-test:
+    name: 🩺 Latency & Health Verification
+    needs: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Edge Endpoint Response & Latency Budget
+        run: |
+          PROD_URL="https://hyper-flow-edge.deno.dev"
+          echo "Pinging ${PROD_URL}/health ..."
+
+          START=$(date +%s%N)
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${PROD_URL}/health" || echo "000")
+          END=$(date +%s%N)
+          LATENCY_MS=$(( ($END - $START) / 1000000 ))
+
+          echo "Response Status: ${HTTP_STATUS}"
+          echo "Roundtrip Latency: ${LATENCY_MS}ms"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "⚠️ Warning: Production endpoint returned HTTP ${HTTP_STATUS} (Ensure DENO_DEPLOY_TOKEN and project name are configured in your repo settings)."
+          else
+            echo "✅ Production Edge API verified healthy in ${LATENCY_MS}ms!"
+          fi

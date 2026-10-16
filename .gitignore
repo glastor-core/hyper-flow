@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.deno/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun.lockb.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Build and dist
+dist/
+build/
+.turbo/
+
+# SQLite local data
+*.sqlite
+*.sqlite-journal
+*.db
+*.db-journal
+
+# Editor directories
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

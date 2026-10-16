@@ -1,0 +1,15 @@
+{
+  "name": "hyper-flow",
+  "version": "1.0.0",
+  "exports": "./src/server.ts",
+  "tasks": {
+    "dev": "deno run --watch --allow-net --allow-env --allow-read src/server.ts",
+    "start": "deno run --allow-net --allow-env --allow-read src/server.ts"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "lib": ["deno.window", "deno.ns"]
+  },
+  "nodeModulesDir": "auto"
+}

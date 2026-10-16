@@ -1,0 +1,30 @@
+{
+  "name": "hyper-flow",
+  "version": "1.0.0",
+  "description": "Ultra-fast Edge AI API built with Hono, tested with Bun, and deployed to Deno Deploy",
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts",
+    "test": "bun test",
+    "test:evals": "bun test test/evals.test.ts",
+    "test:api": "bun test test/api.test.ts",
+    "deno:dev": "deno run --watch --allow-net --allow-env src/server.ts",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "^0.18.4",
+    "@libsql/client": "^0.14.0",
+    "@scalar/hono-api-reference": "^0.5.168",
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.7.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.30.4",
+    "typescript": "^5.7.3"
+  }
+}

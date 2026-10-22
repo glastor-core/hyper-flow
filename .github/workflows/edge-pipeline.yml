@@ -225,14 +225,20 @@ jobs:
         run: |
           # Fetch all tags
           git fetch --tags
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           
-          # Auto-increment patch version for master merges
-          VERSION_NUM=${LATEST_TAG#v}
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
-          NEW_PATCH=$((PATCH + 1))
-          NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_TAG="v1.0.0"
+            HAS_PREV="false"
+          else
+            VERSION_NUM=${LATEST_TAG#v}
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
+            NEW_PATCH=$((PATCH + 1))
+            NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+            HAS_PREV="true"
+          fi
           
+          echo "has_prev=${HAS_PREV}" >> $GITHUB_OUTPUT
           echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
           echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
           echo "Next Release Tag: ${NEW_TAG}"
@@ -242,11 +248,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.versioning.outputs.new_tag }}"
-          gh release create "$TAG" \
-            --title "Release $TAG — Hyper-Flow Edge API" \
-            --generate-notes \
-            --notes-start-tag "${{ steps.versioning.outputs.latest_tag }}" \
-            openapi.json#OpenAPI-3.1-Contract.json
+          if [ "${{ steps.versioning.outputs.has_prev }}" = "true" ]; then
+            gh release create "$TAG" \
+              --title "Release $TAG — Hyper-Flow Edge API" \
+              --generate-notes \
+              --notes-start-tag "${{ steps.versioning.outputs.latest_tag }}" \
+              openapi.json#OpenAPI-3.1-Contract.json
+          else
+            gh release create "$TAG" \
+              --title "Release $TAG — Hyper-Flow Edge API" \
+              --generate-notes \
+              openapi.json#OpenAPI-3.1-Contract.json
+          fi
           
           echo "✅ Release $TAG created with official OpenAPI contract attached!"
 

@@ -6,7 +6,7 @@
     "npm:@scalar/hono-api-reference@~0.5.168": "0.5.184_hono@4.13.13",
     "npm:@types/bun@latest": "1.4.3",
     "npm:drizzle-kit@~0.30.4": "0.30.6",
-    "npm:drizzle-orm@~0.38.4": "0.38.4_@libsql+client@0.14.0",
+    "npm:drizzle-orm@~0.45.4": "0.45.4_@libsql+client@0.14.0",
     "npm:hono@^4.7.2": "4.13.13",
     "npm:typescript@^5.7.3": "5.9.3",
     "npm:zod@^3.24.2": "3.25.76"
@@ -437,8 +437,8 @@
       ],
       "bin": true
     },
-    "drizzle-orm@0.38.4_@libsql+client@0.14.0": {
-      "integrity": "sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==",
+    "drizzle-orm@0.45.4_@libsql+client@0.14.0": {
+      "integrity": "sha512-NiM1YZpJ2UxyeE67DpDDZ+Tsw4YLX3trSlkNT7Tm9eKoUNb1LvaAaQzXgYQsWs+AQ9TUmmwMmBOCXuqqxUWKKQ==",
       "dependencies": [
         "@libsql/client"
       ],
@@ -659,7 +659,7 @@
         "npm:@scalar/hono-api-reference@~0.5.168",
         "npm:@types/bun@latest",
         "npm:drizzle-kit@~0.30.4",
-        "npm:drizzle-orm@~0.38.4",
+        "npm:drizzle-orm@~0.45.4",
         "npm:hono@^4.7.2",
         "npm:typescript@^5.7.3",
         "npm:zod@^3.24.2"

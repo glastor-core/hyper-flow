@@ -43,6 +43,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Mitigación de Inyección DOM XSS (CWE-79)**: Eliminación de asignaciones directas con `.innerHTML` en el panel de control (`src/views/dashboard.ts`), implementando construcción segura de nodos del DOM mediante `document.createElement('pre')`, `textContent` y `replaceChildren()`.
 - **Protección contra Divulgación de Stack Traces & Credenciales (CWE-209)**: Manejador de errores global `app.onError` en `src/server.ts` que rediseña y redacta los errores en producción evitando exponer cadenas de conexión o trazas internas.
 - **Cabeceras de Seguridad OWASP & CORS**: Integración de middleware `secureHeaders` (`nosniff`, `SAMEORIGIN`, `referrerPolicy`) y `cors()` global para mitigar ataques de clickjacking y sniffing de tipos MIME.
+- **Remediación de Vulnerabilidad de Dependencias (CVE-2026-39356 / GHSA-gpj5-g38j-94v9)**: Actualizado `drizzle-orm` a `^0.45.4` erradicando vulnerabilidad de inyección SQL por identificadores no escapados reportada por Dependabot.
 
 ### Changed
 - **Alineación con Rama `master`**: Actualizados los triggers y condiciones de despliegue en `.github/workflows/edge-pipeline.yml` para soportar plenamente la rama `master`.

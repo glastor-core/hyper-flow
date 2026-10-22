@@ -6,6 +6,19 @@ node_modules/
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.pub
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+.dev.vars
+.wrangler/
 
 # Logs and debug
 *.log
@@ -23,6 +36,7 @@ Desktop.ini
 dist/
 build/
 .turbo/
+openapi.json
 
 # SQLite local data
 *.sqlite

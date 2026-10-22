@@ -811,10 +811,15 @@ export function renderDashboardHtml(): string {
         
         terminalLatency.textContent = \`\${latency} ms\`;
         terminalStatus.textContent = \`HTTP \${res.status} OK • \${json.runtime}\`;
-        terminalOutput.innerHTML = \`<pre>\${JSON.stringify(json, null, 2)}</pre>\`;
+        const preSuccess = document.createElement('pre');
+        preSuccess.textContent = JSON.stringify(json, null, 2);
+        terminalOutput.replaceChildren(preSuccess);
       } catch (e) {
         terminalStatus.textContent = 'Request Error';
-        terminalOutput.innerHTML = \`<pre style="color: #ef4444;">Error de red al invocar la API Edge: \${e.message}</pre>\`;
+        const preErr = document.createElement('pre');
+        preErr.style.color = '#ef4444';
+        preErr.textContent = \`Error de red al invocar la API Edge: \${e.message}\`;
+        terminalOutput.replaceChildren(preErr);
       } finally {
         submitBtn.disabled = false;
         submitBtn.style.opacity = '1';
@@ -833,10 +838,15 @@ export function renderDashboardHtml(): string {
         const res = await fetch(path);
         const json = await res.json();
         code.textContent = \`HTTP \${res.status}\`;
-        output.innerHTML = \`<pre>\${JSON.stringify(json, null, 2)}</pre>\`;
+        const preDoc = document.createElement('pre');
+        preDoc.textContent = JSON.stringify(json, null, 2);
+        output.replaceChildren(preDoc);
       } catch (e) {
         code.textContent = 'ERR';
-        output.innerHTML = \`<pre style="color: #ef4444;">\${e.message}</pre>\`;
+        const preDocErr = document.createElement('pre');
+        preDocErr.style.color = '#ef4444';
+        preDocErr.textContent = e.message;
+        output.replaceChildren(preDocErr);
       }
     }
 

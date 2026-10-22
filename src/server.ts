@@ -1,6 +1,8 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
-import { db, rawClient } from "./db/client.ts";
+import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
+import { db, rawClient, getEnv } from "./db/client.ts";
 import { aiInferenceLogs } from "./db/schema.ts";
 import { renderDashboardHtml } from "./views/dashboard.ts";
 
@@ -14,6 +16,28 @@ export function detectRuntime(): "bun" | "deno" | "cloudflare-worker" | "node" {
 }
 
 export const app = new OpenAPIHono();
+
+// Security Middlewares & Headers
+app.use("*", cors());
+app.use(
+  "*",
+  secureHeaders({
+    xFrameOptions: "SAMEORIGIN",
+    xContentTypeOptions: "nosniff",
+    referrerPolicy: "strict-origin-when-cross-origin",
+  })
+);
+
+// Global Error Handler (Prevents stack trace / internal secret disclosure CWE-209)
+app.onError((err, c) => {
+  console.error(`[Unhandled Error] ${err.message}`, err.stack);
+  const isProd = getEnv("NODE_ENV") === "production";
+  return c.json({
+    error: isProd ? "Internal Server Error" : err.message,
+    status: 500,
+    timestamp: new Date().toISOString(),
+  }, 500);
+});
 
 // ==========================================
 // 1. Healthcheck Route
@@ -220,9 +244,7 @@ app.get("/", (c) => c.html(renderDashboardHtml()));
 // ==========================================
 // 5. Server Bootstrap (Multi-Runtime Compatible)
 // ==========================================
-const port = Number(
-  (typeof process !== "undefined" && process.env?.PORT) || 8000
-);
+const port = Number(getEnv("PORT") || 8000);
 
 // If executing inside Deno runtime
 if (typeof (globalThis as any).Deno !== "undefined" && (globalThis as any).Deno?.serve) {

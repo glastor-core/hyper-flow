@@ -74,4 +74,12 @@ describe("Hyper-Flow Edge API Endpoints", () => {
     expect(html).toContain("Hyper-Flow");
     expect(html).toContain("Edge AI & Pipeline Control Center");
   });
+
+  it("applies OWASP security headers and CORS", async () => {
+    const res = await app.request("/health");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(res.headers.get("x-frame-options")).toBe("SAMEORIGIN");
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+  });
 });

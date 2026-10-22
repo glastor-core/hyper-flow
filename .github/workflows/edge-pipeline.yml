@@ -249,13 +249,14 @@ jobs:
   downstream-sync:
     name: 🔄 Multi-Repo Client Dispatch
     needs: automated-release
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && env.CLIENT_REPO != ''
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       CLIENT_REPO: ${{ secrets.CLIENT_REPO }} # e.g. "my-org/frontend-dashboard"
       CLIENT_TOKEN: ${{ secrets.CLIENT_DISPATCH_TOKEN }}
     steps:
       - name: Dispatch Event to Consumer Repository
+        if: env.CLIENT_REPO != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ env.CLIENT_TOKEN }}

@@ -1,0 +1,11 @@
+# ==============================================================================
+# FUNDING.yml - GitHub Sponsors & Financial Sustainability
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button
+# ==============================================================================
+
+# GitHub Sponsors username
+github: glastor-core
+
+# Custom sponsorship URLs
+custom:
+  - https://github.com/sponsors/glastor-core

@@ -1,0 +1,44 @@
+name: DevSecOps & Security Audit
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  schedule:
+    - cron: "0 2 * * 1"
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nemesis:
+    name: Nemesis DevSecOps & Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Nemesis DevSecOps Auditor
+        uses: glastor-core/nemesis@v1
+        with:
+          diff-mode: ${{ github.event_name == 'pull_request' }}
+          auto-fix: false
+          pr-suggestions: true
+          scan-secrets: true
+          scan-sast: true
+          scan-sca: true
+          scan-hygiene: true
+          scan-licenses: true
+          generate-sbom: true
+          upload-sarif: true
+          fail-on-critical: true

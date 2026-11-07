@@ -40,6 +40,7 @@ jobs:
               const filename = file.filename;
               if (filename.startsWith('src/db/')) labelsToAdd.add('area:database');
               else if (filename.startsWith('src/views/')) labelsToAdd.add('area:ui-dashboard');
+              else if (filename.startsWith('src/ai/')) labelsToAdd.add('area:ai-gateway');
               else if (filename.startsWith('test/')) labelsToAdd.add('area:tests');
               else if (filename.startsWith('.github/')) labelsToAdd.add('area:ci-cd');
               else if (filename.startsWith('src/')) labelsToAdd.add('area:api-core');
@@ -57,14 +58,19 @@ jobs:
             }
 
   # =========================================================================
-  # 1. Tests & AI Evals (Ultra-fast Bun Runner)
+  # 1. Tests, AI Evals, Specter API Contract & Vortex AST
   # =========================================================================
   test-and-eval:
-    name: ⚡ Bun Fast Tests & AI Evals
+    name: ⚡ Bun Fast Tests, Specter & Vortex AST
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun Runtime
         uses: oven-sh/setup-bun@v2
@@ -74,16 +80,40 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Run Specter Polyglot AST API Contract & SemVer Gatekeeper
+        id: specter
+        uses: glastor-core/specter@v1
+        with:
+          head-dir: "."
+          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'HEAD~1' }}
+          fail-on-trojan: "true"
+          output-sarif: "specter-results.sarif"
+          output-sbom: "specter-sbom.cdx.json"
+
+      - name: Run Vortex AST Predictive CI & LPT Sharding
+        id: vortex
+        uses: glastor-core/vortex@v1
+        with:
+          shards: "2"
+          test-globs: "test/**/*.test.ts"
+          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'HEAD~1' }}
+          head-ref: "HEAD"
+
       - name: Run Unit Tests & AI Evals
         run: bun test
         env:
           NODE_ENV: test
+          DATABASE_URL: file:test-ephemeral.db
 
   # =========================================================================
-  # 2. Database Sync (Edge Migrations)
+  # 2A. PR Migration Verification (Isolated Ephemeral DB - ZERO Production Secrets)
   # =========================================================================
-  database-sync:
-    name: 🗄️ Edge Database Migration
+  database-verify-pr:
+    name: 🛡️ Verify Migrations (Ephemeral PR DB)
+    if: github.event_name == 'pull_request'
     needs: test-and-eval
     runs-on: ubuntu-latest
     steps:
@@ -98,82 +128,85 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run Schema Migrations
+      - name: Test Schema Migrations on Ephemeral SQLite (Zero Secrets)
+        run: bun run db:migrate
+        env:
+          DATABASE_URL: file:ephemeral-pr.db
+
+  # =========================================================================
+  # 2B. Production Database Sync (Restricted strictly to Main/Master Push)
+  # =========================================================================
+  database-sync-prod:
+    name: 🗄️ Production Database Migration
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    needs: test-and-eval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Schema Migrations with Protected Secrets
         run: bun run db:migrate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:local.db' }}
           DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
 
   # =========================================================================
-  # 3. Deploy to Deno Deploy (Preview or Production)
+  # 3. Deploy to Deno Deploy (Modern Deno 2+ CLI - Production Only)
   # =========================================================================
   deploy:
     name: 🚀 Deploy to Deno Deploy
-    needs: database-sync
+    needs: database-sync-prod
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to Deno Deploy
-        if: env.DENO_DEPLOY_TOKEN != ''
-        uses: denoland/deployctl@v1
+      - name: Setup Deno Runtime
+        uses: denoland/setup-deno@v2
         with:
-          project: "hyper-flow-edge"
-          entrypoint: "src/server.ts"
-          root: "."
+          deno-version: v2.x
+
+      - name: Deploy to Deno Deploy (Deno 2 CLI)
+        if: env.DENO_DEPLOY_TOKEN != ''
+        run: deno deploy --project=hyper-flow-edge --token="${{ secrets.DENO_DEPLOY_TOKEN }}" src/server.ts
         env:
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
 
       - name: Notify Deno Deploy Setup Needed
         if: env.DENO_DEPLOY_TOKEN == ''
         run: |
-          echo "::warning::DENO_DEPLOY_TOKEN is not set in GitHub Repository Secrets. Add DENO_DEPLOY_TOKEN in Settings -> Secrets and variables -> Actions to enable automatic edge deployment."
+          echo "::warning::DENO_DEPLOY_TOKEN is not set in GitHub Repository Secrets. Configure DENO_DEPLOY_TOKEN in Settings -> Secrets and variables -> Actions to enable automatic edge deployment."
         env:
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
 
-      - name: Post Preview URL Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.issue.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
-            const previewUrl = `https://hyper-flow-edge--pr-${prNumber}.deno.dev`;
-            
-            const commentBody = `### 🚀 Hyper-Flow Edge Preview Ready!\n\n` +
-              `Your Hono Edge API has been built and deployed globally.\n\n` +
-              `| Resource | URL |\n` +
-              `| :--- | :--- |\n` +
-              `| 🌐 **Live API** | [${previewUrl}](${previewUrl}) |\n` +
-              `| 🩺 **Health Check** | [${previewUrl}/health](${previewUrl}/health) |\n` +
-              `| 📖 **Interactive Docs** | [${previewUrl}/doc](${previewUrl}/doc) |\n\n` +
-              `*Deployed with Deno Deploy & verified with Bun.*`;
-
-            await github.rest.issues.createComment({
-              issue_number: prNumber,
-              owner: owner,
-              repo: repo,
-              body: commentBody
-            });
-
   # =========================================================================
-  # 4. Post-Deploy Smoke Test & Latency Budget
+  # 4. Post-Deploy Smoke Test & Strict Latency Budget (Fails on Error)
   # =========================================================================
   smoke-test:
     name: 🩺 Latency & Health Verification
     needs: deploy
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
     steps:
       - name: Verify Edge Endpoint Response & Latency Budget
         run: |
+          set -e
           PROD_URL="https://hyper-flow-edge.deno.dev"
           echo "Pinging ${PROD_URL}/health ..."
 
@@ -186,21 +219,31 @@ jobs:
           echo "Roundtrip Latency: ${LATENCY_MS}ms"
 
           if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "⚠️ Warning: Production endpoint returned HTTP ${HTTP_STATUS} (Ensure DENO_DEPLOY_TOKEN and project name are configured in your repo settings)."
+            if [ -n "${DENO_DEPLOY_TOKEN:-}" ]; then
+              echo "❌ Error: Production edge endpoint returned HTTP ${HTTP_STATUS}! Pipeline failed."
+              exit 1
+            else
+              echo "⚠️ Warning: Production endpoint returned HTTP ${HTTP_STATUS} (DENO_DEPLOY_TOKEN is not configured yet in repository secrets)."
+              exit 0
+            fi
+          fi
+
+          if [ "$LATENCY_MS" -gt 1500 ]; then
+            echo "⚠️ Warning: Cold start latency exceeded threshold (${LATENCY_MS}ms > 1500ms)."
           else
             echo "✅ Production Edge API verified healthy in ${LATENCY_MS}ms!"
           fi
 
   # =========================================================================
-  # 5. Repository Management: Automated Release & Contract Artifacts
+  # 5. Automated Release & SemVer Smart Bumping (Dependent on Deploy & Smoke Test)
   # =========================================================================
   automated-release:
     name: 📦 Automated Release & Contract Publish
-    needs: [test-and-eval, database-sync]
+    needs: [test-and-eval, database-sync-prod, deploy, smoke-test]
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to create tags and releases
+      contents: write
     outputs:
       new_tag: ${{ steps.versioning.outputs.new_tag }}
     steps:
@@ -220,24 +263,34 @@ jobs:
       - name: Export OpenAPI Specification Artifact
         run: bun run export:openapi
 
-      - name: Determine Next Semantic Version & Tag
+      - name: Determine Next Semantic Version & Tag (SemVer Smart Bumper)
         id: versioning
         run: |
-          # Fetch all tags
           git fetch --tags
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
+
           if [ -z "$LATEST_TAG" ]; then
             NEW_TAG="v1.0.0"
             HAS_PREV="false"
           else
             VERSION_NUM=${LATEST_TAG#v}
             IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
-            NEW_PATCH=$((PATCH + 1))
-            NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+
+            LOG_MSGS=$(git log "${LATEST_TAG}..HEAD" --oneline 2>/dev/null || git log -n 5 --oneline)
+
+            if echo "$LOG_MSGS" | grep -Eq "BREAKING CHANGE|!:"; then
+              NEW_MAJOR=$((MAJOR + 1))
+              NEW_TAG="v${NEW_MAJOR}.0.0"
+            elif echo "$LOG_MSGS" | grep -Eq "feat(\(.*\))?:"; then
+              NEW_MINOR=$((MINOR + 1))
+              NEW_TAG="v${MAJOR}.${NEW_MINOR}.0"
+            else
+              NEW_PATCH=$((PATCH + 1))
+              NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+            fi
             HAS_PREV="true"
           fi
-          
+
           echo "has_prev=${HAS_PREV}" >> $GITHUB_OUTPUT
           echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
           echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
@@ -260,11 +313,11 @@ jobs:
               --generate-notes \
               openapi.json#OpenAPI-3.1-Contract.json
           fi
-          
+
           echo "✅ Release $TAG created with official OpenAPI contract attached!"
 
   # =========================================================================
-  # 6. Repository Management: Multi-Repo Downstream Dispatch (Optional)
+  # 6. Repository Management: Multi-Repo Downstream Dispatch
   # =========================================================================
   downstream-sync:
     name: 🔄 Multi-Repo Client Dispatch
@@ -272,7 +325,7 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      CLIENT_REPO: ${{ secrets.CLIENT_REPO }} # e.g. "my-org/frontend-dashboard"
+      CLIENT_REPO: ${{ secrets.CLIENT_REPO }}
       CLIENT_TOKEN: ${{ secrets.CLIENT_DISPATCH_TOKEN }}
     steps:
       - name: Dispatch Event to Consumer Repository

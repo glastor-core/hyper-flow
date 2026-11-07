@@ -1,6 +1,6 @@
 {
   "name": "hyper-flow",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Ultra-fast Edge AI API built with Hono, tested with Bun, and deployed to Deno Deploy",
   "type": "module",
   "main": "src/server.ts",

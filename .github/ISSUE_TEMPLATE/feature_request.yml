@@ -1,0 +1,29 @@
+name: ✨ Propuesta de Nueva Funcionalidad (Feature Request)
+description: Sugiere una mejora técnica, nueva integración o optimización arquitectónica.
+title: "feat: "
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Apreciamos tus aportes para evolucionar **HYPER-FLOW**.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o Caso de Uso
+      description: ¿Qué problema o limitación estás intentando resolver?
+      placeholder: Actualmente no es posible generar...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución Propuesta (Design Doc Breve)
+      description: Describe cómo visualizas la implementación o la API resultante.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Qué otras soluciones exploraste y por qué fueron descartadas?

@@ -1,0 +1,24 @@
+# ==============================================================================
+# PROJECT HYPER-FLOW - CODEOWNERS CONFIGURATION (GitHub 2026 Standard)
+# Purpose: Define ownership, accountability, mandatory review paths & compliance.
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# ==============================================================================
+
+# [ GLOBAL MAINTAINER ]
+# Default reviewer for all repository assets to preserve architectural integrity.
+* @glastor-core
+
+# [ CI/CD & SUPPLY CHAIN SECURITY ]
+# Workflows, GitHub configurations, automation and dependency definitions.
+.github/ @glastor-core
+.github/workflows/ @glastor-core
+.github/dependabot.yml @glastor-core
+
+# [ COMPLIANCE, GOVERNANCE & LEGAL ]
+# Legal policies, security advisories, licensing and community guides.
+LICENSE @glastor-core
+SECURITY.md @glastor-core
+.github/SECURITY.md @glastor-core
+.github/CODE_OF_CONDUCT.md @glastor-core
+.github/CONTRIBUTING.md @glastor-core
+CITATION.cff @glastor-core

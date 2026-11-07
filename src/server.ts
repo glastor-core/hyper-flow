@@ -5,6 +5,9 @@ import { secureHeaders } from "hono/secure-headers";
 import { db, rawClient, getEnv } from "./db/client.ts";
 import { aiInferenceLogs } from "./db/schema.ts";
 import { renderDashboardHtml } from "./views/dashboard.ts";
+import { aiGateway } from "./ai/provider.ts";
+import { apiKeyAuth } from "./middleware/auth.ts";
+import { edgeRateLimiter } from "./middleware/rate-limit.ts";
 
 const startTime = Date.now();
 
@@ -17,8 +20,13 @@ export function detectRuntime(): "bun" | "deno" | "cloudflare-worker" | "node" {
 
 export const app = new OpenAPIHono();
 
-// Security Middlewares & Headers
-app.use("*", cors());
+// Security Middlewares & Headers with configurable CORS
+const allowedOrigins = getEnv("ALLOWED_ORIGINS");
+const corsOrigin = allowedOrigins
+  ? allowedOrigins.split(",").map((o) => o.trim())
+  : "*";
+
+app.use("*", cors({ origin: corsOrigin }));
 app.use(
   "*",
   secureHeaders({
@@ -28,10 +36,15 @@ app.use(
   })
 );
 
-// Global Error Handler (Prevents stack trace / internal secret disclosure CWE-209)
+// Global Error Handler (Sanitizes stack traces in production to prevent CWE-209)
 app.onError((err, c) => {
-  console.error(`[Unhandled Error] ${err.message}`, err.stack);
   const isProd = getEnv("NODE_ENV") === "production";
+  if (isProd) {
+    console.error(`[Unhandled Error] ${err.name}: ${err.message}`);
+  } else {
+    console.error(`[Unhandled Error] ${err.message}`, err.stack);
+  }
+
   return c.json({
     error: isProd ? "Internal Server Error" : err.message,
     status: 500,
@@ -40,22 +53,22 @@ app.onError((err, c) => {
 });
 
 // ==========================================
-// 1. Healthcheck Route
+// 1. Health & Readiness Routes (Liveness vs Readiness)
 // ==========================================
 const HealthResponseSchema = z.object({
   status: z.literal("healthy"),
   uptimeSeconds: z.number().openapi({ example: 42.5 }),
   runtime: z.string().openapi({ example: "deno" }),
   timestamp: z.string().openapi({ example: "2026-10-16T21:30:00.000Z" }),
-  version: z.string().openapi({ example: "1.0.0" }),
+  version: z.string().openapi({ example: "1.1.0" }),
 });
 
 const healthRoute = createRoute({
   method: "get",
   path: "/health",
   tags: ["System"],
-  summary: "Healthcheck and runtime status",
-  description: "Returns the health, uptime, and edge runtime executing this instance.",
+  summary: "Liveness probe and runtime status",
+  description: "Returns process health, uptime, and edge runtime executing this instance.",
   responses: {
     200: {
       content: {
@@ -63,7 +76,7 @@ const healthRoute = createRoute({
           schema: HealthResponseSchema,
         },
       },
-      description: "Service is healthy and responding",
+      description: "Service process is healthy and responding",
     },
   },
 });
@@ -75,8 +88,64 @@ app.openapi(healthRoute, (c) => {
     uptimeSeconds: Number(uptime.toFixed(2)),
     runtime: detectRuntime(),
     timestamp: new Date().toISOString(),
-    version: "1.0.0",
+    version: "1.1.0",
   }, 200);
+});
+
+// Readiness Probe (Deep healthcheck verifying database connectivity)
+const ReadinessResponseSchema = z.object({
+  status: z.enum(["ready", "degraded"]),
+  database: z.enum(["connected", "disconnected"]),
+  uptimeSeconds: z.number().openapi({ example: 42.5 }),
+  runtime: z.string().openapi({ example: "deno" }),
+  timestamp: z.string(),
+});
+
+const readinessRoute = createRoute({
+  method: "get",
+  path: "/health/ready",
+  tags: ["System"],
+  summary: "Readiness probe with database connectivity check",
+  description: "Checks if the Edge database connection is healthy and ready for queries.",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: ReadinessResponseSchema,
+        },
+      },
+      description: "Service dependencies are healthy and ready to accept traffic",
+    },
+    503: {
+      content: {
+        "application/json": {
+          schema: ReadinessResponseSchema,
+        },
+      },
+      description: "Service is degraded due to dependency outage",
+    },
+  },
+});
+
+app.openapi(readinessRoute, async (c) => {
+  const uptime = (Date.now() - startTime) / 1000;
+  let dbConnected = false;
+
+  try {
+    await rawClient.execute("SELECT 1 AS ready");
+    dbConnected = true;
+  } catch (err: any) {
+    console.error("[Readiness Check] Database ping failed:", err.message);
+  }
+
+  const statusCode = dbConnected ? 200 : 503;
+  return c.json({
+    status: dbConnected ? ("ready" as const) : ("degraded" as const),
+    database: dbConnected ? ("connected" as const) : ("disconnected" as const),
+    uptimeSeconds: Number(uptime.toFixed(2)),
+    runtime: detectRuntime(),
+    timestamp: new Date().toISOString(),
+  }, statusCode);
 });
 
 // ==========================================
@@ -92,6 +161,7 @@ const InfoResponseSchema = z.object({
     database: z.string().openapi({ example: "LibSQL / SQLite Edge" }),
   }),
   activeRuntime: z.string(),
+  aiProvider: z.string().openapi({ example: "edge-synthetic" }),
 });
 
 const infoRoute = createRoute({
@@ -122,11 +192,12 @@ app.openapi(infoRoute, (c) => {
       database: "LibSQL / SQLite Edge",
     },
     activeRuntime: detectRuntime(),
+    aiProvider: aiGateway.getActiveProviderName(),
   }, 200);
 });
 
 // ==========================================
-// 3. AI Inference Endpoint (Edge AI Simulation & Real Fallback)
+// 3. AI Inference Endpoint (Edge AI Gateway)
 // ==========================================
 const AiGenerateRequestSchema = z.object({
   prompt: z.string().min(1, "Prompt cannot be empty").openapi({ example: "Explain quantum computing in 1 sentence" }),
@@ -141,6 +212,8 @@ const AiGenerateResponseSchema = z.object({
   response: z.string().openapi({ example: "Quantum computing leverages qubits..." }),
   latencyMs: z.number().openapi({ example: 12 }),
   runtime: z.string().openapi({ example: "deno" }),
+  provider: z.string().optional().openapi({ example: "groq" }),
+  model: z.string().optional().openapi({ example: "llama-3.3-70b-versatile" }),
   timestamp: z.string(),
 });
 
@@ -149,7 +222,7 @@ const aiGenerateRoute = createRoute({
   path: "/api/v1/ai/generate",
   tags: ["AI"],
   summary: "Execute Edge AI inference",
-  description: "Validates input prompt and returns structured Edge AI completion.",
+  description: "Validates input prompt and returns structured Edge AI completion via active LLM provider or Edge synthetic fallback.",
   request: {
     body: {
       content: {
@@ -172,31 +245,48 @@ const aiGenerateRoute = createRoute({
     400: {
       description: "Invalid input or empty prompt",
     },
+    401: {
+      description: "Unauthorized: Invalid or missing API Key",
+    },
+    429: {
+      description: "Too Many Requests: Rate limit exceeded",
+    },
   },
 });
 
+// Protect AI route with Rate Limiter and API Key auth
+app.use("/api/v1/ai/*", edgeRateLimiter());
+app.use("/api/v1/ai/*", apiKeyAuth());
+
 app.openapi(aiGenerateRoute, async (c) => {
-  const reqStart = Date.now();
   const body = c.req.valid("json");
   const runtime = detectRuntime();
 
-  // Edge AI response generation
-  const requestId = `ai_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  const syntheticResponse = `[Edge AI (${runtime})] Analysis for topic '${body.topic}': "${body.prompt}" processed with temperature ${body.temperature}. Verified edge response.`;
-
-  const latency = Date.now() - reqStart;
-  const createdAt = new Date().toISOString();
-
-  // Non-blocking log to Edge database
-  try {
-    await db.insert(aiInferenceLogs).values({
-      id: requestId,
+  // Execute inference via Edge AI Gateway (supports Groq, OpenAI, or Edge synthetic fallback)
+  const aiResult = await aiGateway.generate(
+    {
       prompt: body.prompt,
       topic: body.topic,
-      response: syntheticResponse,
-      latencyMs: latency,
+      temperature: body.temperature,
+    },
+    runtime
+  );
+
+  // Privacy & Data retention control: redact plain prompt/response if configured
+  const shouldStoreContent = getEnv("STORE_PROMPTS_CONTENT") !== "false";
+  const promptToStore = shouldStoreContent ? body.prompt : "[REDACTED_FOR_PRIVACY]";
+  const responseToStore = shouldStoreContent ? aiResult.response : "[REDACTED_FOR_PRIVACY]";
+
+  // Non-blocking telemetry log to Edge database
+  try {
+    await db.insert(aiInferenceLogs).values({
+      id: aiResult.id,
+      prompt: promptToStore,
+      topic: aiResult.topic,
+      response: responseToStore,
+      latencyMs: aiResult.latencyMs,
       runtime: runtime,
-      createdAt: createdAt,
+      createdAt: aiResult.timestamp,
     }).catch(() => {
       // Graceful fallback if table is not yet created in memory
     });
@@ -204,15 +294,7 @@ app.openapi(aiGenerateRoute, async (c) => {
     // Edge-resilient: Never fail client requests on background telemetry failure
   }
 
-  return c.json({
-    id: requestId,
-    prompt: body.prompt,
-    topic: body.topic,
-    response: syntheticResponse,
-    latencyMs: latency,
-    runtime: runtime,
-    timestamp: createdAt,
-  }, 200);
+  return c.json(aiResult, 200);
 });
 
 // ==========================================
@@ -221,7 +303,7 @@ app.openapi(aiGenerateRoute, async (c) => {
 app.doc("/api/v1/openapi.json", {
   openapi: "3.1.0",
   info: {
-    version: "1.0.0",
+    version: "1.1.0",
     title: "Hyper-Flow Edge API",
     description: "High-performance AI Edge API combining Bun, Deno Deploy, and Hono.",
   },

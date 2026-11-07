@@ -1,6 +1,6 @@
 {
   "name": "hyper-flow",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "exports": "./src/server.ts",
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-env --allow-read src/server.ts",

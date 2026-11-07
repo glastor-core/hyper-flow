@@ -38,6 +38,17 @@ build/
 .turbo/
 openapi.json
 
+# GLASTOR Ecosystem Telemetry & Reports (Specter, Vortex, Nemesis)
+.specter/
+specter-report.json
+specter-results.sarif
+specter-sbom.cdx.json
+.vortex/
+vortex-report.json
+.nemesis-reports/
+nemesis-report.sarif
+sbom.cdx.json
+
 # SQLite local data
 *.sqlite
 *.sqlite-journal

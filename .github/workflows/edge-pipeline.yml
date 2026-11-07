@@ -281,22 +281,34 @@ jobs:
             if echo "$LOG_MSGS" | grep -Eq "BREAKING CHANGE|!:"; then
               NEW_MAJOR=$((MAJOR + 1))
               NEW_TAG="v${NEW_MAJOR}.0.0"
-            elif echo "$LOG_MSGS" | grep -Eq "feat(\(.*\))?:"; then
+              SHOULD_RELEASE="true"
+            elif echo "$LOG_MSGS" | grep -Eq "^[a-f0-9]+ feat(\(.*\))?:"; then
               NEW_MINOR=$((MINOR + 1))
               NEW_TAG="v${MAJOR}.${NEW_MINOR}.0"
-            else
+              SHOULD_RELEASE="true"
+            elif echo "$LOG_MSGS" | grep -Eq "^[a-f0-9]+ (fix|perf)(\(.*\))?:"; then
               NEW_PATCH=$((PATCH + 1))
               NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+              SHOULD_RELEASE="true"
+            else
+              NEW_TAG="${LATEST_TAG}"
+              SHOULD_RELEASE="false"
             fi
             HAS_PREV="true"
           fi
 
+          if [ -z "$LATEST_TAG" ]; then
+            SHOULD_RELEASE="true"
+          fi
+
+          echo "should_release=${SHOULD_RELEASE}" >> $GITHUB_OUTPUT
           echo "has_prev=${HAS_PREV}" >> $GITHUB_OUTPUT
           echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
           echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
-          echo "Next Release Tag: ${NEW_TAG}"
+          echo "Next Release Tag: ${NEW_TAG} (should_release=${SHOULD_RELEASE})"
 
       - name: Create GitHub Release with OpenAPI Contract Asset
+        if: steps.versioning.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

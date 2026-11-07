@@ -23,8 +23,8 @@ updates:
         patterns:
           - "*"
 
-  # Maintain npm / Bun dependencies
-  - package-ecosystem: "npm"
+  # Maintain Bun dependencies
+  - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "weekly"

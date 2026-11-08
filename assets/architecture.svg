@@ -1,0 +1,361 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060913"/>
+      <stop offset="50%" stop-color="#0A0F1D"/>
+      <stop offset="100%" stop-color="#04060B"/>
+    </linearGradient>
+
+    <!-- Card Backgrounds -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#151D30" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0E1424" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="highlightCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B2540" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#11182B" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Glow Gradients -->
+    <radialGradient id="indigoGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#A855F7" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Accent Gradients -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="amberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+    <linearGradient id="wireGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#06B6D4" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="shadowFilter" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Border Strokes -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="50%" stop-color="#6366F1" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.16"/>
+    </linearGradient>
+    <linearGradient id="subtleBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1100" height="640" rx="20" fill="url(#bgGrad)"/>
+  <rect width="1100" height="640" rx="20" stroke="url(#subtleBorder)" stroke-width="1.5"/>
+
+  <!-- Ambient Glow Blobs -->
+  <circle cx="200" cy="180" r="240" fill="url(#indigoGlow)"/>
+  <circle cx="650" cy="300" r="280" fill="url(#cyanGlow)"/>
+  <circle cx="920" cy="200" r="220" fill="url(#purpleGlow)"/>
+
+  <!-- Subtle Blueprint Grid Pattern -->
+  <g opacity="0.07" stroke="#94A3B8" stroke-width="0.75" stroke-dasharray="3 3">
+    <path d="M40 0v640M120 0v640M200 0v640M280 0v640M360 0v640M440 0v640M520 0v640M600 0v640M680 0v640M760 0v640M840 0v640M920 0v640M1000 0v640M1060 0v640"/>
+    <path d="M0 40h1100M0 120h1100M0 200h1100M0 280h1100M0 360h1100M0 440h1100M0 520h1100M0 600h1100"/>
+  </g>
+
+  <!-- ==================== HEADER BAR ==================== -->
+  <g transform="translate(48, 38)">
+    <rect width="1004" height="48" rx="10" fill="#0E1424" fill-opacity="0.6" stroke="url(#subtleBorder)"/>
+    <circle cx="24" cy="24" r="6" fill="#EF4444" fill-opacity="0.8"/>
+    <circle cx="44" cy="24" r="6" fill="#F59E0B" fill-opacity="0.8"/>
+    <circle cx="64" cy="24" r="6" fill="#10B981" fill-opacity="0.8"/>
+    
+    <text x="96" y="29" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5">HYPER-FLOW // HIGH-PERFORMANCE EDGE AI GATEWAY ARCHITECTURE</text>
+    
+    <!-- Status badge -->
+    <rect x="850" y="12" width="138" height="24" rx="12" fill="#10B981" fill-opacity="0.12" stroke="#10B981" stroke-opacity="0.3"/>
+    <circle cx="866" cy="24" r="4" fill="#10B981"/>
+    <text x="878" y="28" fill="#34D399" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="600">PRODUCTION READY</text>
+  </g>
+
+  <!-- ==================== FLOW CONNECTORS (WIRES) ==================== -->
+  <g stroke-linecap="round">
+    <!-- Clients to Perimeter -->
+    <path d="M 190 220 L 260 220" stroke="url(#wireGradient)" stroke-width="2.5"/>
+    <circle cx="225" cy="220" r="3" fill="#06B6D4" filter="url(#glowFilter)"/>
+
+    <!-- Perimeter to Core Router -->
+    <path d="M 430 220 L 490 220" stroke="url(#wireGradient)" stroke-width="2.5"/>
+    <circle cx="460" cy="220" r="3" fill="#6366F1" filter="url(#glowFilter)"/>
+
+    <!-- Router to AI Gateway -->
+    <path d="M 660 200 L 730 200" stroke="url(#wireGradient)" stroke-width="2.5"/>
+
+    <!-- Router to Probes -->
+    <path d="M 575 290 L 575 360" stroke="#6366F1" stroke-opacity="0.4" stroke-width="2" stroke-dasharray="4 4"/>
+
+    <!-- Gateway to LLM Providers -->
+    <!-- Groq -->
+    <path d="M 900 170 C 930 170, 930 145, 960 145" stroke="#06B6D4" stroke-width="2" stroke-opacity="0.7"/>
+    <!-- OpenAI -->
+    <path d="M 900 200 L 960 200" stroke="#10B981" stroke-width="2" stroke-opacity="0.7"/>
+    <!-- Custom -->
+    <path d="M 900 230 C 930 230, 930 255, 960 255" stroke="#A855F7" stroke-width="2" stroke-opacity="0.7"/>
+
+    <!-- Gateway Fallback to Synthetic -->
+    <path d="M 815 285 L 815 350" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4 4" stroke-opacity="0.8"/>
+    <text x="825" y="325" fill="#FBBF24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10" font-weight="600">OFFLINE FALLBACK</text>
+
+    <!-- Gateway to Persistence -->
+    <path d="M 750 285 C 750 440, 560 480, 480 480" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.6"/>
+    
+    <!-- Probes to DB (Readiness check) -->
+    <path d="M 575 425 L 575 480 L 480 480" stroke="#10B981" stroke-width="1.8" stroke-dasharray="3 3" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- ==================== COLUMN 1: CLIENTS & INGRESS ==================== -->
+  <g transform="translate(48, 115)">
+    <!-- Container Outline -->
+    <rect width="150" height="340" rx="14" fill="#0C1220" fill-opacity="0.5" stroke="url(#subtleBorder)"/>
+    <text x="18" y="28" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1">1. INGRESS</text>
+
+    <!-- Client Card 1: HTTP API -->
+    <g transform="translate(12, 42)" filter="url(#shadowFilter)">
+      <rect width="126" height="72" rx="10" fill="url(#cardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#6366F1" fill-opacity="0.15"/>
+      <path d="M21 21l6 3-6 3v-6z" fill="#818CF8"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">REST API</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">HTTP Consumers</text>
+      <rect x="12" y="52" width="60" height="12" rx="6" fill="#6366F1" fill-opacity="0.2"/>
+      <text x="20" y="61" fill="#C7D2FE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8" font-weight="600">POST /ai/gen</text>
+    </g>
+
+    <!-- Client Card 2: Glassmorphism Dashboard -->
+    <g transform="translate(12, 126)" filter="url(#shadowFilter)">
+      <rect width="126" height="72" rx="10" fill="url(#cardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#06B6D4" fill-opacity="0.15"/>
+      <rect x="19" y="19" width="10" height="10" rx="2" fill="#22D3EE"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">Web HUD</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">Dashboard UI</text>
+      <rect x="12" y="52" width="46" height="12" rx="6" fill="#06B6D4" fill-opacity="0.2"/>
+      <text x="20" y="61" fill="#A5F3FC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8" font-weight="600">GET /</text>
+    </g>
+
+    <!-- Client Card 3: Scalar Interactive Docs -->
+    <g transform="translate(12, 210)" filter="url(#shadowFilter)">
+      <rect width="126" height="72" rx="10" fill="url(#cardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#A855F7" fill-opacity="0.15"/>
+      <path d="M19 19h10v2H19zm0 4h10v2H19zm0 4h6v2H19z" fill="#C084FC"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">Scalar Docs</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">OpenAPI 3.1</text>
+      <rect x="12" y="52" width="56" height="12" rx="6" fill="#A855F7" fill-opacity="0.2"/>
+      <text x="19" y="61" fill="#E9D5FF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8" font-weight="600">GET /doc</text>
+    </g>
+
+    <!-- Edge Runtime Stamp -->
+    <g transform="translate(12, 296)">
+      <rect width="126" height="32" rx="8" fill="#070C18" stroke="#334155" stroke-dasharray="2 2"/>
+      <text x="14" y="20" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10" font-weight="600">Multi-Region Edge</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 2: PERIMETER SECURITY ==================== -->
+  <g transform="translate(256, 115)">
+    <rect width="180" height="340" rx="14" fill="#0E1628" fill-opacity="0.65" stroke="url(#borderGrad)" stroke-width="1.2"/>
+    <text x="20" y="28" fill="#38BDF8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1">2. PERIMETER SHIELD</text>
+
+    <!-- Middleware 1: Rate Limiting -->
+    <g transform="translate(14, 46)" filter="url(#shadowFilter)">
+      <rect width="152" height="78" rx="10" fill="url(#highlightCardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#06B6D4" fill-opacity="0.2"/>
+      <path d="M24 18v6l4 2" stroke="#22D3EE" stroke-width="2" stroke-linecap="round"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">Rate Limiter</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">Sliding Window (Edge)</text>
+      <text x="16" y="62" fill="#38BDF8" font-family="monospace" font-size="9.5">60 req/min • 429 Retry</text>
+    </g>
+
+    <!-- Middleware 2: API Key Auth -->
+    <g transform="translate(14, 138)" filter="url(#shadowFilter)">
+      <rect width="152" height="78" rx="10" fill="url(#highlightCardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#6366F1" fill-opacity="0.2"/>
+      <path d="M22 22a3 3 0 100-6 3 3 0 000 6zm0 0v6l4 2" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">API Key Guard</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">Perimeter Protection</text>
+      <text x="16" y="62" fill="#818CF8" font-family="monospace" font-size="9.5">Bearer / X-API-Key</text>
+    </g>
+
+    <!-- Middleware 3: OWASP Headers -->
+    <g transform="translate(14, 230)" filter="url(#shadowFilter)">
+      <rect width="152" height="92" rx="10" fill="url(#highlightCardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#10B981" fill-opacity="0.2"/>
+      <path d="M24 18l5 2v4c0 3-2 6-5 7-3-1-5-4-5-7v-4l5-2z" stroke="#34D399" stroke-width="1.8" fill="none"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">OWASP &amp; CORS</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">Secure Headers</text>
+      <text x="16" y="58" fill="#64748B" font-family="monospace" font-size="9">nosniff • SAMEORIGIN</text>
+      <text x="16" y="74" fill="#64748B" font-family="monospace" font-size="9">CORS: ALLOWED_ORIGINS</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 3: CORE HONO EDGE ROUTER ==================== -->
+  <g transform="translate(490, 115)">
+    <rect width="180" height="340" rx="14" fill="#10172A" fill-opacity="0.75" stroke="url(#borderGrad)" stroke-width="1.5"/>
+    <text x="20" y="28" fill="#818CF8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1">3. HONO v4 CORE</text>
+
+    <!-- Main Router Box -->
+    <g transform="translate(14, 46)" filter="url(#shadowFilter)">
+      <rect width="152" height="150" rx="10" fill="url(#cardGrad)" stroke="url(#subtleBorder)"/>
+      <rect x="12" y="12" width="30" height="30" rx="8" fill="url(#primaryGradient)"/>
+      <text x="21" y="32" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="16" font-weight="900">H</text>
+      <text x="50" y="26" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="13" font-weight="800">OpenAPI Router</text>
+      <text x="50" y="40" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">@hono/zod-openapi</text>
+
+      <line x1="12" y1="54" x2="140" y2="54" stroke="#334155" stroke-width="1"/>
+      
+      <text x="14" y="72" fill="#CBD5E1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">• Declarative Zod validation</text>
+      <text x="14" y="88" fill="#CBD5E1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">• Strict Latency Guardrails</text>
+      <text x="14" y="104" fill="#CBD5E1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">• CWE-209 Stack Redaction</text>
+      <text x="14" y="120" fill="#CBD5E1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">• Bun &amp; Deno Multi-Runtime</text>
+
+      <rect x="12" y="130" width="128" height="14" rx="4" fill="#6366F1" fill-opacity="0.15"/>
+      <text x="18" y="141" fill="#A5B4FC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8.5" font-weight="600">Contract: openapi.json (3.1)</text>
+    </g>
+
+    <!-- Health Probes -->
+    <g transform="translate(14, 210)" filter="url(#shadowFilter)">
+      <rect width="152" height="110" rx="10" fill="url(#cardGrad)" stroke="url(#subtleBorder)"/>
+      <text x="14" y="22" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700">Health Probes</text>
+      
+      <!-- Liveness -->
+      <g transform="translate(12, 32)">
+        <circle cx="6" cy="6" r="4" fill="#10B981"/>
+        <text x="16" y="10" fill="#CBD5E1" font-family="monospace" font-size="10">GET /health</text>
+        <text x="16" y="22" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8.5">Process Liveness Probe</text>
+      </g>
+
+      <!-- Readiness -->
+      <g transform="translate(12, 66)">
+        <circle cx="6" cy="6" r="4" fill="#06B6D4"/>
+        <text x="16" y="10" fill="#CBD5E1" font-family="monospace" font-size="10">GET /health/ready</text>
+        <text x="16" y="22" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8.5">Active DB Ping (SELECT 1)</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 4: AI GATEWAY & FALLBACK ==================== -->
+  <g transform="translate(720, 115)">
+    <rect width="180" height="340" rx="14" fill="#111B33" fill-opacity="0.75" stroke="url(#borderGrad)" stroke-width="1.5"/>
+    <text x="20" y="28" fill="#A855F7" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1">4. AI GATEWAY SERVICE</text>
+
+    <!-- Engine Card -->
+    <g transform="translate(14, 46)" filter="url(#shadowFilter)">
+      <rect width="152" height="135" rx="10" fill="url(#highlightCardGrad)" stroke="url(#subtleBorder)"/>
+      <circle cx="24" cy="24" r="10" fill="#A855F7" fill-opacity="0.25"/>
+      <path d="M24 18a6 6 0 100 12 6 6 0 000-12zm-8 6h16" stroke="#C084FC" stroke-width="1.8"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="12" font-weight="700">Adaptive Router</text>
+      <text x="42" y="38" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="10">EdgeAiGateway</text>
+
+      <line x1="12" y1="52" x2="140" y2="52" stroke="#334155" stroke-width="1"/>
+      <text x="14" y="70" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9.5">Timeout: AI_TIMEOUT_MS</text>
+      <text x="14" y="86" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9.5">Max Tokens: AI_MAX_TOKENS</text>
+      <text x="14" y="102" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9.5">AbortController Control</text>
+      
+      <rect x="12" y="112" width="128" height="15" rx="4" fill="#10B981" fill-opacity="0.15"/>
+      <text x="18" y="123" fill="#6EE7B7" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8.5" font-weight="600">Latencies: 20ms - 300ms</text>
+    </g>
+
+    <!-- Synthetic Fallback Engine -->
+    <g transform="translate(14, 200)" filter="url(#shadowFilter)">
+      <rect width="152" height="120" rx="10" fill="url(#cardGrad)" stroke="#F59E0B" stroke-opacity="0.4"/>
+      <circle cx="24" cy="24" r="10" fill="#F59E0B" fill-opacity="0.2"/>
+      <path d="M24 18v6l3 3" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round"/>
+      <text x="42" y="24" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11.5" font-weight="700">Edge Synthetic</text>
+      <text x="42" y="38" fill="#FCD34D" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9.5" font-weight="600">Zero-Net Fallback</text>
+
+      <text x="14" y="62" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9">• 100% Deterministic</text>
+      <text x="14" y="76" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9">• Zero external dependency</text>
+      <text x="14" y="90" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9">• Edge sub-15ms execution</text>
+
+      <rect x="12" y="98" width="128" height="14" rx="4" fill="#F59E0B" fill-opacity="0.15"/>
+      <text x="18" y="108" fill="#FDE68A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8" font-weight="600">Guaranteed Pipeline SLA</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 5: LLM PROVIDERS ==================== -->
+  <g transform="translate(950, 115)">
+    <text x="8" y="22" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1">5. LLM TARGETS</text>
+
+    <!-- Target 1: Groq -->
+    <g transform="translate(0, 36)" filter="url(#shadowFilter)">
+      <rect width="102" height="52" rx="8" fill="url(#cardGrad)" stroke="#06B6D4" stroke-opacity="0.5"/>
+      <text x="12" y="20" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700">Groq API</text>
+      <text x="12" y="32" fill="#38BDF8" font-family="monospace" font-size="8.5">Llama 3.3</text>
+      <text x="12" y="44" fill="#10B981" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8" font-weight="600">&lt; 300ms SLA</text>
+    </g>
+
+    <!-- Target 2: OpenAI -->
+    <g transform="translate(0, 98)" filter="url(#shadowFilter)">
+      <rect width="102" height="52" rx="8" fill="url(#cardGrad)" stroke="#10B981" stroke-opacity="0.5"/>
+      <text x="12" y="20" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700">OpenAI</text>
+      <text x="12" y="32" fill="#34D399" font-family="monospace" font-size="8.5">GPT-4o-mini</text>
+      <text x="12" y="44" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8">Structured output</text>
+    </g>
+
+    <!-- Target 3: Custom -->
+    <g transform="translate(0, 160)" filter="url(#shadowFilter)">
+      <rect width="102" height="52" rx="8" fill="url(#cardGrad)" stroke="#A855F7" stroke-opacity="0.5"/>
+      <text x="12" y="20" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11" font-weight="700">Custom LLM</text>
+      <text x="12" y="32" fill="#C084FC" font-family="monospace" font-size="8.5">Ollama / vLLM</text>
+      <text x="12" y="44" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="8">AI_API_BASE_URL</text>
+    </g>
+  </g>
+
+  <!-- ==================== BOTTOM PERSISTENCE & PRIVACY BAR ==================== -->
+  <g transform="translate(180, 480)" filter="url(#shadowFilter)">
+    <rect width="740" height="110" rx="14" fill="#0D1527" stroke="url(#borderGrad)" stroke-width="1.5"/>
+
+    <!-- Left Badge: LibSQL Engine -->
+    <g transform="translate(24, 20)">
+      <rect width="48" height="48" rx="10" fill="#0284C7" fill-opacity="0.2"/>
+      <path d="M24 16c6 0 10 2 10 4s-4 4-10 4-10-2-10-4 4-4 10-4zm0 8c6 0 10 2 10 4s-4 4-10 4-10-2-10-4 4-4 10-4zm0 8c6 0 10 2 10 4s-4 4-10 4-10-2-10-4 4-4 10-4z" stroke="#38BDF8" stroke-width="1.8" fill="none"/>
+    </g>
+    <text x="84" y="38" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="14" font-weight="800">Edge Persistence &amp; Telemetry Layer</text>
+    <text x="84" y="56" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="11">Powered by Drizzle ORM + LibSQL / SQLite (Non-blocking async telemetry persistence)</text>
+
+    <!-- Badges Row -->
+    <g transform="translate(24, 76)">
+      <rect width="210" height="22" rx="6" fill="#1E293B" stroke="#334155"/>
+      <text x="10" y="15" fill="#E2E8F0" font-family="monospace" font-size="9.5">Table: ai_inference_logs</text>
+
+      <rect x="220" width="220" height="22" rx="6" fill="#1E293B" stroke="#334155"/>
+      <text x="230" y="15" fill="#E2E8F0" font-family="monospace" font-size="9.5">Privacy: STORE_PROMPTS_CONTENT</text>
+
+      <rect x="450" width="230" height="22" rx="6" fill="#047857" fill-opacity="0.25" stroke="#10B981" stroke-opacity="0.4"/>
+      <text x="460" y="15" fill="#6EE7B7" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="9.5" font-weight="600">✓ [REDACTED_FOR_PRIVACY] Guard</text>
+    </g>
+  </g>
+</svg>
+
